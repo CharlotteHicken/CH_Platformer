@@ -43,7 +43,14 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        return false;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.7f, LayerMask.GetMask("Ground"));
+        if (hit)
+        {
+            Debug.Log("Grounded");
+            return false;
+        }
+        Debug.Log("Not Grounded");
+        return true;
     }
 
     public FacingDirection GetFacingDirection()
