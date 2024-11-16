@@ -35,6 +35,10 @@ public class PlayerController : MonoBehaviour
 
     public bool IsWalking()
     {
+        if (Input.GetAxis("Horizontal") != 0)
+        {
+            return true;
+        }
         return false;
     }
     public bool IsGrounded()
@@ -44,6 +48,14 @@ public class PlayerController : MonoBehaviour
 
     public FacingDirection GetFacingDirection()
     {
+        if (Input.GetAxis("Horizontal") > 0)
+        {
+            return FacingDirection.right;
+        }
+        if (Input.GetAxis("Horizontal") < 0)
+        {
+            return FacingDirection.left;
+        }
         return FacingDirection.left;
     }
 }
