@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     PlayerController.FacingDirection lastDirection = FacingDirection.right;
 
     public float moveSpeed;
+    public float jumpPower;
    
 
     // Start is called before the first frame update
@@ -25,13 +26,17 @@ public class PlayerController : MonoBehaviour
     {
         //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
         //manage the actual movement of the character.
-        Vector2 playerInput = new Vector2(Input.GetAxis("Horizontal"), 0);
+        Vector2 playerInput = new Vector2(Input.GetAxis("Horizontal"), rb.velocity.y);
+        if (Input.GetKeyDown(KeyCode.Space) && !IsGrounded())
+        {
+            playerInput.y = jumpPower;
+        }
         MovementUpdate(playerInput);
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
-        rb.velocity = new Vector2(playerInput.x * moveSpeed, rb.velocity.y);
+        rb.velocity = new Vector2(playerInput.x * moveSpeed, playerInput.y);
     }
 
     public bool IsWalking()
@@ -47,10 +52,8 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.7f, LayerMask.GetMask("Ground"));
         if (hit)
         {
-            Debug.Log("Grounded");
             return false;
         }
-        Debug.Log("Not Grounded");
         return true;
     }
 
