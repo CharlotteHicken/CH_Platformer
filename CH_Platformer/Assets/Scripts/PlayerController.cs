@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
         left, right
     }
     Rigidbody2D rb;
+    PlayerController.FacingDirection lastDirection = FacingDirection.right;
 
     public float moveSpeed;
    
@@ -57,12 +58,14 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetAxis("Horizontal") > 0)
         {
+            lastDirection = FacingDirection.right;
             return FacingDirection.right;
         }
         if (Input.GetAxis("Horizontal") < 0)
         {
+            lastDirection = FacingDirection.left;
             return FacingDirection.left;
         }
-        return FacingDirection.left;
+        return lastDirection;
     }
 }
