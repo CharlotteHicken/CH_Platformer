@@ -12,13 +12,20 @@ public class PlayerController : MonoBehaviour
     PlayerController.FacingDirection lastDirection = FacingDirection.right;
 
     public float moveSpeed;
-    public float jumpPower;
+    float gravity;
+    float jumpVelocity;
+    public float apexHeight;
+    public float apexTime;
    
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        gravity = 2 * apexHeight / (Mathf.Pow(apexTime, 2));
+        rb.gravityScale = gravity;
+        jumpVelocity = 2 * apexHeight / apexTime;
     }
 
     // Update is called once per frame
@@ -29,7 +36,7 @@ public class PlayerController : MonoBehaviour
         Vector2 playerInput = new Vector2(Input.GetAxis("Horizontal"), rb.velocity.y);
         if (Input.GetKeyDown(KeyCode.Space) && !IsGrounded())
         {
-            playerInput.y = jumpPower;
+            playerInput.y = jumpVelocity;
         }
         MovementUpdate(playerInput);
     }
