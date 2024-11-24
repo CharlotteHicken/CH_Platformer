@@ -16,6 +16,9 @@ public class PlayerController : MonoBehaviour
     float jumpVelocity;
     public float apexHeight;
     public float apexTime;
+    public float terminalVelocity;
+    public float coyoteTime;
+    float currentGroundTime;
    
 
     // Start is called before the first frame update
@@ -26,6 +29,7 @@ public class PlayerController : MonoBehaviour
         gravity = 2 * apexHeight / (Mathf.Pow(apexTime, 2));
         rb.gravityScale = gravity;
         jumpVelocity = 2 * apexHeight / apexTime;
+
     }
 
     // Update is called once per frame
@@ -34,7 +38,16 @@ public class PlayerController : MonoBehaviour
         //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
         //manage the actual movement of the character.
         Vector2 playerInput = new Vector2(Input.GetAxis("Horizontal"), rb.velocity.y);
-        if (Input.GetKeyDown(KeyCode.Space) && !IsGrounded())
+
+        if (!IsGrounded())
+        {
+            currentGroundTime = 0f;
+        }
+        else
+        {
+            currentGroundTime += Time.deltaTime;
+        } 
+        if (Input.GetKeyDown(KeyCode.Space) && (currentGroundTime <= coyoteTime || !IsGrounded()))
         {
             playerInput.y = jumpVelocity;
         }
@@ -44,6 +57,11 @@ public class PlayerController : MonoBehaviour
     private void MovementUpdate(Vector2 playerInput)
     {
         rb.velocity = new Vector2(playerInput.x * moveSpeed, playerInput.y);
+
+        if (rb.velocity.y < -terminalVelocity)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, -terminalVelocity);
+        }
     }
 
     public bool IsWalking()
