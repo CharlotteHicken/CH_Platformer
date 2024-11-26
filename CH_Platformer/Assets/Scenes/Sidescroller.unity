@@ -1606,10 +1606,15 @@ MonoBehaviour:
   maxSpeed: 5
   accelerationTime: 0.25
   decelerationTime: 0.15
-  apexHeight: 40
-  apexTime: 3.75
+  apexHeight: 3
+  apexTime: 0.5
   terminalVelocity: 15
   coyoteTime: 0.125
+  groundCheckOffset: 1.05
+  groundCheckSize: {x: 0.4, y: 0.1}
+  groundCheckMask:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!4 &1433354315
 Transform:
   m_ObjectHideFlags: 0
@@ -1619,7 +1624,7 @@ Transform:
   m_GameObject: {fileID: 1433354312}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24.93, y: 0, z: 0}
+  m_LocalPosition: {x: -21.03, y: -3.9, z: 0}
   m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1661,9 +1666,9 @@ BoxCollider2D:
   m_Offset: {x: 0, y: -0.12}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 1, y: 0.90625}
-    newSize: {x: 1, y: 1}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1.078125, y: 0.9375}
+    newSize: {x: 1.078125, y: 0.9375}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
