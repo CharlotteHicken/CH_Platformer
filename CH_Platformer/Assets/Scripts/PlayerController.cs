@@ -114,12 +114,6 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = Physics2D.OverlapBox(transform.position + Vector3.down * groundCheckOffset, groundCheckSize, 0, groundCheckMask);
     }
-
-    private void DebugDrawGroundCheck()
-    {
-        Vector3 p1 = transform.position + Vector3.down * groundCheckOffset + new Vector3(groundCheckSize.x / 2, groundCheckSize.y / 2);
-    }
-
     private void JumpUpdate()
     {
         if (isGrounded && Input.GetButton("Jump"))
