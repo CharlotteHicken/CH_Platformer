@@ -11,7 +11,10 @@ public class PlayerController : MonoBehaviour
     Rigidbody2D rb;
     PlayerController.FacingDirection lastDirection = FacingDirection.right;
 
-    public float moveSpeed;
+
+    public float maxSpeed = 5f;
+    public float accelerationTime = 0.25f;
+    public float decelerationTime = 0.15f;
     float gravity;
     float jumpVelocity;
     public float apexHeight;
@@ -19,6 +22,10 @@ public class PlayerController : MonoBehaviour
     public float terminalVelocity;
     public float coyoteTime;
     float currentGroundTime;
+    float accelerationRate;
+    float decelerationRate;
+
+    Vector2 velocity;
    
 
     // Start is called before the first frame update
@@ -29,6 +36,9 @@ public class PlayerController : MonoBehaviour
         gravity = 2 * apexHeight / (Mathf.Pow(apexTime, 2));
         rb.gravityScale = gravity;
         jumpVelocity = 2 * apexHeight / apexTime;
+        accelerationRate = maxSpeed / accelerationTime;
+        decelerationRate = maxSpeed / decelerationTime;
+
 
     }
 
@@ -52,11 +62,30 @@ public class PlayerController : MonoBehaviour
             playerInput.y = jumpVelocity;
         }
         MovementUpdate(playerInput);
+
+        rb.velocity = velocity;
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
-        rb.velocity = new Vector2(playerInput.x * moveSpeed, playerInput.y);
+        if(playerInput.x != 0)
+        {
+            velocity.x += accelerationRate * playerInput.x * Time.deltaTime;
+            velocity.x = Mathf.Clamp(velocity.x, -maxSpeed, maxSpeed);
+        }
+        else
+        {
+            if(velocity.x > 0)
+            {
+                velocity.x -= decelerationRate * Time.deltaTime;
+                velocity.x = Mathf.Max(velocity.x, 0);
+            }
+            else if (velocity.x < 0)
+            {
+                velocity.x += decelerationRate * Time.deltaTime;
+                velocity.x = Mathf.Min(velocity.x, 0);
+            }
+        }
 
         if (rb.velocity.y < -terminalVelocity)
         {
@@ -74,7 +103,8 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.7f, LayerMask.GetMask("Ground"));
+        RaycastHit2D hit = Physics2D.BoxCast(transform.position, new Vector2(0.5f,0.01f), 0f, Vector2.down, 0.7f, LayerMask.GetMask("Ground"));
+        //RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.7f, LayerMask.GetMask("Ground"));
         if (hit)
         {
             return false;
