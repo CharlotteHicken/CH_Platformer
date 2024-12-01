@@ -1603,12 +1603,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a1ce42ea3e3dd44868493ae73ec06d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 5
+  maxSpeed: 8
   accelerationTime: 0.25
   decelerationTime: 0.15
   apexHeight: 5
   apexTime: 0.5
-  terminalVelocity: 15
+  maxVelocity: 15
+  slowFallVelocity: 3
   coyoteTime: 0.125
   groundCheckOffset: 1.05
   groundCheckSize: {x: 0.4, y: 0.1}

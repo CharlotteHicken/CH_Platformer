@@ -19,7 +19,9 @@ public class PlayerController : MonoBehaviour
     float initialJumpSpeed;
     public float apexHeight = 3f;
     public float apexTime = 0.5f;
-    public float terminalVelocity;
+    public float maxVelocity = 15f;
+    float terminalVelocity;
+    public float slowFallVelocity = 3f;
     public float coyoteTime;
     float currentGroundTime;
     float accelerationRate;
@@ -45,6 +47,7 @@ public class PlayerController : MonoBehaviour
         accelerationRate = maxSpeed / accelerationTime;
         decelerationRate = maxSpeed / decelerationTime;
 
+        terminalVelocity = maxVelocity;
 
     }
 
@@ -91,11 +94,6 @@ public class PlayerController : MonoBehaviour
                 velocity.x = Mathf.Min(velocity.x, 0);
             }
         }
-
-        if (rb.velocity.y < -terminalVelocity)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, -terminalVelocity);
-        }
     }
 
     public bool IsWalking()
@@ -120,6 +118,21 @@ public class PlayerController : MonoBehaviour
         {
             velocity.y = initialJumpSpeed;
             isGrounded = false;
+            terminalVelocity = maxVelocity;
+
+        }
+        else if (!isGrounded && Input.GetButton("Jump"))
+        {
+            terminalVelocity = slowFallVelocity;
+        }
+        else
+        {
+            terminalVelocity = maxVelocity;
+        }
+        
+        if (velocity.y < -terminalVelocity)
+        {
+            velocity.y = -terminalVelocity;
         }
     }
     public FacingDirection GetFacingDirection()
