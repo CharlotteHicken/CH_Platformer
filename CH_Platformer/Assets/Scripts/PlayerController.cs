@@ -11,52 +11,86 @@ public class PlayerController : MonoBehaviour
     Rigidbody2D rb;
     PlayerController.FacingDirection lastDirection = FacingDirection.right;
 
-    public float moveSpeed;
+
+    public float maxSpeed = 5f;
+    public float accelerationTime = 0.25f;
+    public float decelerationTime = 0.15f;
     float gravity;
-    float jumpVelocity;
-    public float apexHeight;
-    public float apexTime;
+    float initialJumpSpeed;
+    public float apexHeight = 3f;
+    public float apexTime = 0.5f;
     public float terminalVelocity;
     public float coyoteTime;
     float currentGroundTime;
+    float accelerationRate;
+    float decelerationRate;
+
+    public float groundCheckOffset = 0.5f;
+    public Vector2 groundCheckSize = new(0.4f, 0.1f);
+    public LayerMask groundCheckMask;
+
+    bool isGrounded = false;
+
+    Vector2 velocity;
    
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        rb.gravityScale = 0;
+        gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
 
-        gravity = 2 * apexHeight / (Mathf.Pow(apexTime, 2));
-        rb.gravityScale = gravity;
-        jumpVelocity = 2 * apexHeight / apexTime;
+        initialJumpSpeed = 2 * apexHeight / apexTime;
+        accelerationRate = maxSpeed / accelerationTime;
+        decelerationRate = maxSpeed / decelerationTime;
+
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
-        //manage the actual movement of the character.
-        Vector2 playerInput = new Vector2(Input.GetAxis("Horizontal"), rb.velocity.y);
+        CheckForGround();
 
-        if (!IsGrounded())
+        Vector2 playerInput = new Vector2();
+        playerInput.x = Input.GetAxisRaw("Horizontal");
+
+        MovementUpdate(playerInput);
+        JumpUpdate();
+
+        if (!isGrounded)
         {
-            currentGroundTime = 0f;
+            velocity.y += gravity * Time.deltaTime;
         }
         else
         {
-            currentGroundTime += Time.deltaTime;
-        } 
-        if (Input.GetKeyDown(KeyCode.Space) && (currentGroundTime <= coyoteTime || !IsGrounded()))
-        {
-            playerInput.y = jumpVelocity;
+            velocity.y = 0;
         }
-        MovementUpdate(playerInput);
+
+        rb.velocity = velocity;
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
-        rb.velocity = new Vector2(playerInput.x * moveSpeed, playerInput.y);
+        if(playerInput.x != 0)
+        {
+            velocity.x += accelerationRate * playerInput.x * Time.deltaTime;
+            velocity.x = Mathf.Clamp(velocity.x, -maxSpeed, maxSpeed);
+        }
+        else
+        {
+            if(velocity.x > 0)
+            {
+                velocity.x -= decelerationRate * Time.deltaTime;
+                velocity.x = Mathf.Max(velocity.x, 0);
+            }
+            else if (velocity.x < 0)
+            {
+                velocity.x += decelerationRate * Time.deltaTime;
+                velocity.x = Mathf.Min(velocity.x, 0);
+            }
+        }
 
         if (rb.velocity.y < -terminalVelocity)
         {
@@ -74,14 +108,20 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.7f, LayerMask.GetMask("Ground"));
-        if (hit)
-        {
-            return false;
-        }
-        return true;
+        return isGrounded;
     }
-
+     private void CheckForGround()
+    {
+        isGrounded = Physics2D.OverlapBox(transform.position + Vector3.down * groundCheckOffset, groundCheckSize, 0, groundCheckMask);
+    }
+    private void JumpUpdate()
+    {
+        if (isGrounded && Input.GetButton("Jump"))
+        {
+            velocity.y = initialJumpSpeed;
+            isGrounded = false;
+        }
+    }
     public FacingDirection GetFacingDirection()
     {
         if (Input.GetAxis("Horizontal") > 0)
