@@ -35,6 +35,8 @@ public class PlayerController : MonoBehaviour
 
     bool isGrounded = false;
 
+    bool ladderTime = false;
+
     Vector2 velocity;
    
 
@@ -70,6 +72,15 @@ public class PlayerController : MonoBehaviour
         Vector2 playerInput = new Vector2();
         playerInput.x = Input.GetAxisRaw("Horizontal");
 
+        if (ladderTime)
+        {
+            playerInput.y = Input.GetAxisRaw("Vertical");
+        }
+        else
+        {
+            playerInput.y = 0;
+        }
+
         MovementUpdate(playerInput);
         JumpUpdate();
 
@@ -104,6 +115,11 @@ public class PlayerController : MonoBehaviour
                 velocity.x += decelerationRate * Time.deltaTime;
                 velocity.x = Mathf.Min(velocity.x, 0);
             }
+        }
+
+        if(playerInput.y != 0)
+        {
+            velocity.y += playerInput.x * Time.deltaTime;
         }
     }
 
@@ -159,5 +175,15 @@ public class PlayerController : MonoBehaviour
             return FacingDirection.left;
         }
         return lastDirection;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+            ladderTime = true;
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+            ladderTime = false;
     }
 }
