@@ -12,7 +12,9 @@ public class PlayerController : MonoBehaviour
     PlayerController.FacingDirection lastDirection = FacingDirection.right;
 
 
-    public float maxSpeed = 5f;
+    public float maxWalkSpeed = 5f;
+    float maxSpeed = 5f;
+    public float maxSprintSpeed = 10f;
     public float accelerationTime = 0.25f;
     public float decelerationTime = 0.15f;
     float gravity;
@@ -24,7 +26,7 @@ public class PlayerController : MonoBehaviour
     public float slowFallVelocity = 3f;
     public float coyoteTime;
     float currentGroundTime;
-    float accelerationRate;
+    public float accelerationRate;
     float decelerationRate;
 
     public float groundCheckOffset = 0.5f;
@@ -44,7 +46,7 @@ public class PlayerController : MonoBehaviour
         gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
 
         initialJumpSpeed = 2 * apexHeight / apexTime;
-        accelerationRate = maxSpeed / accelerationTime;
+        accelerationRate = maxWalkSpeed / accelerationTime;
         decelerationRate = maxSpeed / decelerationTime;
 
         terminalVelocity = maxVelocity;
@@ -55,6 +57,15 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         CheckForGround();
+
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            maxSpeed = maxSprintSpeed;
+        }
+        else
+        {
+            maxSpeed = maxWalkSpeed;
+        }
 
         Vector2 playerInput = new Vector2();
         playerInput.x = Input.GetAxisRaw("Horizontal");
