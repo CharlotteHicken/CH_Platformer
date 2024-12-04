@@ -11,56 +11,115 @@ public class PlayerController : MonoBehaviour
     Rigidbody2D rb;
     PlayerController.FacingDirection lastDirection = FacingDirection.right;
 
-    public float moveSpeed;
+
+    public float maxWalkSpeed = 5f;
+    float maxSpeed = 5f;
+    public float maxSprintSpeed = 10f;
+    public float accelerationTime = 0.25f;
+    public float decelerationTime = 0.15f;
     float gravity;
-    float jumpVelocity;
-    public float apexHeight;
-    public float apexTime;
-    public float terminalVelocity;
+    float initialJumpSpeed;
+    public float apexHeight = 3f;
+    public float apexTime = 0.5f;
+    public float maxVelocity = 15f;
+    float terminalVelocity;
+    public float slowFallVelocity = 3f;
     public float coyoteTime;
     float currentGroundTime;
+    public float accelerationRate;
+    float decelerationRate;
+
+    public float groundCheckOffset = 0.5f;
+    public Vector2 groundCheckSize = new(0.4f, 0.1f);
+    public LayerMask groundCheckMask;
+
+    bool isGrounded = false;
+
+    bool ladderTime = false;
+
+    Vector2 velocity;
    
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        rb.gravityScale = 0;
+        gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
 
-        gravity = 2 * apexHeight / (Mathf.Pow(apexTime, 2));
-        rb.gravityScale = gravity;
-        jumpVelocity = 2 * apexHeight / apexTime;
+        initialJumpSpeed = 2 * apexHeight / apexTime;
+        accelerationRate = maxWalkSpeed / accelerationTime;
+        decelerationRate = maxSpeed / decelerationTime;
+
+        terminalVelocity = maxVelocity;
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
-        //manage the actual movement of the character.
-        Vector2 playerInput = new Vector2(Input.GetAxis("Horizontal"), rb.velocity.y);
+        CheckForGround();
 
-        if (!IsGrounded())
+        if (Input.GetKey(KeyCode.LeftShift))
         {
-            currentGroundTime = 0f;
+            maxSpeed = maxSprintSpeed;
         }
         else
         {
-            currentGroundTime += Time.deltaTime;
-        } 
-        if (Input.GetKeyDown(KeyCode.Space) && (currentGroundTime <= coyoteTime || !IsGrounded()))
-        {
-            playerInput.y = jumpVelocity;
+            maxSpeed = maxWalkSpeed;
         }
+
+        Vector2 playerInput = new Vector2();
+        playerInput.x = Input.GetAxisRaw("Horizontal");
+
+        if (ladderTime)
+        {
+            playerInput.y = Input.GetAxisRaw("Vertical");
+        }
+        else
+        {
+            playerInput.y = 0;
+        }
+
         MovementUpdate(playerInput);
+        JumpUpdate();
+
+        if (!isGrounded)
+        {
+            velocity.y += gravity * Time.deltaTime;
+        }
+        else
+        {
+            velocity.y = 0;
+        }
+
+        rb.velocity = velocity;
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
-        rb.velocity = new Vector2(playerInput.x * moveSpeed, playerInput.y);
-
-        if (rb.velocity.y < -terminalVelocity)
+        if(playerInput.x != 0)
         {
-            rb.velocity = new Vector2(rb.velocity.x, -terminalVelocity);
+            velocity.x += accelerationRate * playerInput.x * Time.deltaTime;
+            velocity.x = Mathf.Clamp(velocity.x, -maxSpeed, maxSpeed);
+        }
+        else
+        {
+            if(velocity.x > 0)
+            {
+                velocity.x -= decelerationRate * Time.deltaTime;
+                velocity.x = Mathf.Max(velocity.x, 0);
+            }
+            else if (velocity.x < 0)
+            {
+                velocity.x += decelerationRate * Time.deltaTime;
+                velocity.x = Mathf.Min(velocity.x, 0);
+            }
+        }
+
+        if(playerInput.y != 0)
+        {
+            velocity.y += playerInput.x * Time.deltaTime;
         }
     }
 
@@ -74,14 +133,35 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.7f, LayerMask.GetMask("Ground"));
-        if (hit)
-        {
-            return false;
-        }
-        return true;
+        return isGrounded;
     }
+     private void CheckForGround()
+    {
+        isGrounded = Physics2D.OverlapBox(transform.position + Vector3.down * groundCheckOffset, groundCheckSize, 0, groundCheckMask);
+    }
+    private void JumpUpdate()
+    {
+        if (isGrounded && Input.GetButton("Jump"))
+        {
+            velocity.y = initialJumpSpeed;
+            isGrounded = false;
+            terminalVelocity = maxVelocity;
 
+        }
+        else if (!isGrounded && Input.GetButton("Jump"))
+        {
+            terminalVelocity = slowFallVelocity;
+        }
+        else
+        {
+            terminalVelocity = maxVelocity;
+        }
+        
+        if (velocity.y < -terminalVelocity)
+        {
+            velocity.y = -terminalVelocity;
+        }
+    }
     public FacingDirection GetFacingDirection()
     {
         if (Input.GetAxis("Horizontal") > 0)
@@ -95,5 +175,15 @@ public class PlayerController : MonoBehaviour
             return FacingDirection.left;
         }
         return lastDirection;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+            ladderTime = true;
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+            ladderTime = false;
     }
 }
