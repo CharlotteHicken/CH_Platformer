@@ -36,6 +36,7 @@ public class PlayerController : MonoBehaviour
     bool isGrounded = false;
 
     bool ladderTime = false;
+    bool climbing;
 
     Vector2 velocity;
    
@@ -75,18 +76,28 @@ public class PlayerController : MonoBehaviour
         if (ladderTime)
         {
             playerInput.y = Input.GetAxisRaw("Vertical");
+            if (playerInput.y != 0)
+            {
+                climbing = true;
+            }
         }
         else
         {
             playerInput.y = 0;
+            climbing = false;
         }
+
 
         MovementUpdate(playerInput);
         JumpUpdate();
 
-        if (!isGrounded)
+        if (!isGrounded && !climbing)
         {
             velocity.y += gravity * Time.deltaTime;
+        }
+        else if (climbing)
+        {
+            velocity.y = playerInput.y * maxSpeed;
         }
         else
         {
@@ -115,11 +126,6 @@ public class PlayerController : MonoBehaviour
                 velocity.x += decelerationRate * Time.deltaTime;
                 velocity.x = Mathf.Min(velocity.x, 0);
             }
-        }
-
-        if(playerInput.y != 0)
-        {
-            velocity.y += playerInput.x * Time.deltaTime;
         }
     }
 
@@ -179,11 +185,17 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.CompareTag("Ladder"))
+        {
             ladderTime = true;
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if (collision.CompareTag("Ladder"))
+        {
             ladderTime = false;
+        }
     }
 }
