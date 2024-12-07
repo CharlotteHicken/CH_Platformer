@@ -61,6 +61,7 @@ public class PlayerController : MonoBehaviour
     {
         CheckForGround();
 
+        //modifies the maxspeed that will then determine if the player is sprinting or not
         if (Input.GetKey(KeyCode.LeftShift))
         {
             maxSpeed = maxSprintSpeed;
@@ -73,6 +74,7 @@ public class PlayerController : MonoBehaviour
         Vector2 playerInput = new Vector2();
         playerInput.x = Input.GetAxisRaw("Horizontal");
 
+        //if player is colliding with the ladder, allow vertical control and the ability to climb. Otherwise the player cannot climb
         if (ladderTime)
         {
             playerInput.y = Input.GetAxisRaw("Vertical");
@@ -91,7 +93,7 @@ public class PlayerController : MonoBehaviour
         MovementUpdate(playerInput);
         JumpUpdate();
 
-        if (!isGrounded && !climbing)
+        if (!isGrounded && !climbing) //if player is not on the ground, or not climbing, apply gravity. if the player is climbing, move them based on player input. Otherwise, do not move player vertically.
         {
             velocity.y += gravity * Time.deltaTime;
         }
@@ -104,24 +106,24 @@ public class PlayerController : MonoBehaviour
             velocity.y = 0;
         }
 
-        rb.velocity = velocity;
+        rb.velocity = velocity; //apply the set velocites to the rigidbody
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
-        if(playerInput.x != 0)
+        if(playerInput.x != 0) // if the player is pressing a horizontal movement button, change their position based on acceleration rate but clamp it to not go above max speed
         {
             velocity.x += accelerationRate * playerInput.x * Time.deltaTime;
             velocity.x = Mathf.Clamp(velocity.x, -maxSpeed, maxSpeed);
         }
-        else
+        else //if the player is not pressing a horizontal movement button
         {
-            if(velocity.x > 0)
+            if(velocity.x > 0) //if player was moving right, decrease their movement until it is zero
             {
                 velocity.x -= decelerationRate * Time.deltaTime;
                 velocity.x = Mathf.Max(velocity.x, 0);
             }
-            else if (velocity.x < 0)
+            else if (velocity.x < 0) //if player was moving left, add to their movement until it is zero
             {
                 velocity.x += decelerationRate * Time.deltaTime;
                 velocity.x = Mathf.Min(velocity.x, 0);
@@ -131,7 +133,7 @@ public class PlayerController : MonoBehaviour
 
     public bool IsWalking()
     {
-        if (Input.GetAxis("Horizontal") != 0)
+        if (Input.GetAxis("Horizontal") != 0) //if player is pressing a button, plays walking animation
         {
             return true;
         }
@@ -143,27 +145,27 @@ public class PlayerController : MonoBehaviour
     }
      private void CheckForGround()
     {
-        isGrounded = Physics2D.OverlapBox(transform.position + Vector3.down * groundCheckOffset, groundCheckSize, 0, groundCheckMask);
+        isGrounded = Physics2D.OverlapBox(transform.position + Vector3.down * groundCheckOffset, groundCheckSize, 0, groundCheckMask); //if physics box collides with the ground, player is grounded
     }
     private void JumpUpdate()
     {
-        if (isGrounded && Input.GetButton("Jump"))
+        if (isGrounded && Input.GetButton("Jump")) //if player is on the ground and jump button is pressed, apply jump physics and set to not grounded.
         {
             velocity.y = initialJumpSpeed;
             isGrounded = false;
             terminalVelocity = maxVelocity;
 
         }
-        else if (!isGrounded && Input.GetButton("Jump"))
+        else if (!isGrounded && Input.GetButton("Jump")) //if player is still holding jump button while in the air, set change terminal velocity so they fall slower
         {
             terminalVelocity = slowFallVelocity;
         }
-        else
+        else //if player is not holding space, set terminal veloctiy to a normal falling velocity
         {
             terminalVelocity = maxVelocity;
         }
         
-        if (velocity.y < -terminalVelocity)
+        if (velocity.y < -terminalVelocity) //if velocity is over the terminal velocity, set it to the terminal velocity
         {
             velocity.y = -terminalVelocity;
         }
