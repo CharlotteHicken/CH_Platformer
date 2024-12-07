@@ -78,7 +78,7 @@ public class PlayerController : MonoBehaviour
         if (ladderTime)
         {
             playerInput.y = Input.GetAxisRaw("Vertical");
-            if (playerInput.y != 0)
+            if (playerInput.y != 0) //only set climbing to true when player is pressing an input
             {
                 climbing = true;
             }
@@ -97,7 +97,7 @@ public class PlayerController : MonoBehaviour
         {
             velocity.y += gravity * Time.deltaTime;
         }
-        else if (climbing)
+        if (climbing)
         {
             velocity.y = playerInput.y * maxSpeed;
         }
