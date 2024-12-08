@@ -97,7 +97,7 @@ public class PlayerController : MonoBehaviour
         {
             velocity.y += gravity * Time.deltaTime;
         }
-        if (climbing)
+        else if (climbing)
         {
             velocity.y = playerInput.y * maxSpeed;
         }
